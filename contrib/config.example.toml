@@ -1,0 +1,33 @@
+# Copy to ~/.config/keystats/config.toml — every option is optional.
+
+# Exact device name of the keyboard's main interface (`keystats devices`).
+device_name = "DH747 W-CORNE"
+
+# How often stats are written to disk (seconds).
+flush_interval = 60
+
+# After this many idle seconds the in-memory pattern window and held-modifier
+# state are discarded and active typing time stops counting.
+idle_seconds = 30
+
+# Pattern windows in milliseconds.
+misfire_window_ms = 1000    # modifier+key released, then Backspace within this
+backspace_after_ms = 500    # key X followed by Backspace within this
+bigram_window_ms = 1000     # two keys within this form a bigram
+backspace_run = 3           # this many consecutive Backspaces = deleting a word, ignored
+
+bigrams = true
+
+# Keycodes counted as the SYM layer (Shift+digit is always SYM).
+sym_keys = ["MINUS", "EQUAL", "LEFTBRACE", "RIGHTBRACE", "BACKSLASH", "GRAVE"]
+
+# Physical home-row key for each modifier (labels in the report only).
+[home_row_mods]
+LSuper = "A"
+LAlt = "S"
+LCtrl = "D"
+LShift = "F"
+RShift = "J"
+RCtrl = "K"
+RAlt = "L"
+RSuper = ";"

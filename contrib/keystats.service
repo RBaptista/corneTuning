@@ -1,0 +1,18 @@
+[Unit]
+Description=keystats: aggregate keyboard usage & misfire statistics
+Documentation=file://%h/Documents/corneTuning/README.md
+
+[Service]
+Type=simple
+# Adjust if you installed keystats somewhere else (see README).
+ExecStart=%h/.local/bin/keystats run
+Restart=on-failure
+RestartSec=5
+# Flush stats on stop (SIGTERM is handled).
+KillSignal=SIGTERM
+TimeoutStopSec=10
+UMask=0077
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
