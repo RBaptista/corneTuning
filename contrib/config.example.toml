@@ -1,7 +1,7 @@
 # Copy to ~/.config/keystats/config.toml — every option is optional.
 
 # Exact device name of the keyboard's main interface (`keystats devices`).
-device_name = "DH747 W-CORNE"
+device_name = "Keebart corne_choc_pro"
 
 # How often stats are written to disk (seconds).
 flush_interval = 60

@@ -30,7 +30,7 @@ def runtime_dir() -> Path:
 @dataclass
 class Config:
     # Exact evdev device name of the keyboard's main interface.
-    device_name: str = "DH747 W-CORNE"
+    device_name: str = "Keebart corne_choc_pro"
     # Write stats to disk this often (seconds).
     flush_interval: float = 60.0
     # After this many seconds without a key press the in-memory pattern window is

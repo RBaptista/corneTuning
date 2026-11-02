@@ -1,6 +1,6 @@
 # Give the logged-in desktop user read access to ONLY the Corne's main keyboard
-# interface (not its Mouse / System Control / Consumer Control interfaces, and
-# not any other keyboard). Uses systemd-logind's "uaccess" ACL, so it must sort
+# interface (not its "Keyboard" NKRO / Mouse / System Control / Consumer Control
+# interfaces, and not any other keyboard). Uses systemd-logind's "uaccess" ACL, so it must sort
 # before 73-seat-late.rules — keep the "70-" prefix.
 #
 # Install:  sudo install -m 644 contrib/70-keystats.rules /etc/udev/rules.d/
@@ -9,4 +9,4 @@
 #
 # For a different keyboard, change the name (see `keystats devices` or
 # `cat /proc/bus/input/devices`).
-SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="DH747 W-CORNE", TAG+="uaccess"
+SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="Keebart corne_choc_pro", TAG+="uaccess"
