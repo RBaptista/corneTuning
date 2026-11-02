@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from keystats import keys as K
-from keystats.config import Config
+from keystats.config import Config, load_config
 from keystats.detector import Detector
 from keystats.report import render
 from keystats.stats import Stats, load, save, since_date
@@ -292,6 +292,21 @@ class TestPrivacyAndStorage(unittest.TestCase):
         out = render(kb.stats, Config())
         for section in ("Top 30 keys", "Ctrl+Shift+C", "LShift (F)", "Backspace", "Suggestions"):
             self.assertIn(section, out)
+
+
+class TestConfig(unittest.TestCase):
+    def _load(self, text):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "config.toml"
+            path.write_text(text)
+            return load_config(path)
+
+    def test_default_covers_both_cornes(self):
+        self.assertEqual(Config().device_name, ("Keebart corne_choc_pro", "DH747 W-CORNE"))
+
+    def test_device_name_string_or_list(self):
+        self.assertEqual(self._load('device_name = "A"\n').device_name, ("A",))
+        self.assertEqual(self._load('device_name = ["A", "B"]\n').device_name, ("A", "B"))
 
 
 if __name__ == "__main__":

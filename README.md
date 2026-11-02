@@ -40,10 +40,10 @@ sudo udevadm control --reload
 sudo udevadm trigger --subsystem-match=input
 ```
 
-Then unplug and replug the keyboard. The rule matches the exact device name
-`Keebart corne_choc_pro` (Keebart Corne Choc Pro, Vial firmware) and adds a
-`uaccess` tag. systemd-logind then gives the user at the active seat read access
-to **that one interface**, and nothing else: not the Corne's `Keyboard` (NKRO),
+Then unplug and replug the keyboard. The rule matches the exact device names
+`Keebart corne_choc_pro` (Keebart Corne Choc Pro, Vial firmware) and
+`DH747 W-CORNE` (the older Corne) and adds a `uaccess` tag. systemd-logind then
+gives the user at the active seat read access to **those main interfaces**, and nothing else: not the Corne's `Keyboard` (NKRO),
 Mouse, System Control or Consumer Control interfaces, and not any other keyboard.
 Keypresses arrive on the main interface (USB interface 0), not on the
 `… Keyboard` one. Check it with:
@@ -53,7 +53,7 @@ keystats devices        # the Corne should show "← configured keyboard"
 getfacl /dev/input/by-id/*corne_choc_pro*-event-kbd   # only the one without -if02- lists your user
 ```
 
-If you change keyboards, edit the name in the rule (and in the config, see below).
+If you add a keyboard, add a line with its name to the rule (and to `device_name` in the config, see below).
 
 ### Alternative: join the `input` group
 
@@ -115,7 +115,7 @@ This is optional. Copy `contrib/config.example.toml` to
 
 | option | default | meaning |
 |---|---|---|
-| `device_name` | `Keebart corne_choc_pro` | exact evdev name of the main keyboard interface |
+| `device_name` | `["Keebart corne_choc_pro", "DH747 W-CORNE"]` | exact evdev names of the keyboards' main interfaces (a list, or one string); whichever are plugged in are collected from, and one plugged in later is picked up within 10 s |
 | `flush_interval` | `60` | seconds between writes to disk |
 | `idle_seconds` | `30` | after this much inactivity the pattern window is discarded |
 | `misfire_window_ms` | `1000` | modifier+key, then Backspace within this time = misfire |

@@ -27,7 +27,7 @@ def _duration(spec: str) -> float:
 def cmd_run(cfg, args) -> int:
     from .collector import run
     if args.device:
-        cfg.device_name = args.device
+        cfg.device_name = (args.device,)
     return run(cfg, verbose=args.verbose or args.dry_run, dry_run=args.dry_run)
 
 
@@ -105,7 +105,7 @@ def cmd_status(cfg, args) -> int:
     else:
         state = f"PAUSED until {datetime.fromtimestamp(until):%H:%M:%S}"
     print(f"state:      {state}")
-    print(f"device:     {cfg.device_name}")
+    print(f"device:     {' / '.join(cfg.device_name)}")
     print(f"config:     {config_path()}{'' if config_path().exists() else ' (not present, using defaults)'}")
     p = cfg.stats_path
     if p.exists():
@@ -131,7 +131,7 @@ def cmd_devices(cfg, args) -> int:
         if name is None:
             unreadable += 1
             continue
-        mark = "  ← configured keyboard" if name == cfg.device_name else ""
+        mark = "  ← configured keyboard" if name in cfg.device_name else ""
         print(f"{path:20} {name}{mark}")
     if unreadable:
         print(f"({unreadable} devices not readable by uid {os.getuid()} — see README 'Permissions')")

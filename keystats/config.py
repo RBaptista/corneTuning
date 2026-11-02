@@ -29,8 +29,9 @@ def runtime_dir() -> Path:
 
 @dataclass
 class Config:
-    # Exact evdev device name of the keyboard's main interface.
-    device_name: str = "Keebart corne_choc_pro"
+    # Exact evdev names of the keyboards' main interfaces; any of them that is
+    # plugged in is collected from (in config.toml a single string also works).
+    device_name: tuple[str, ...] = ("Keebart corne_choc_pro", "DH747 W-CORNE")
     # Write stats to disk this often (seconds).
     flush_interval: float = 60.0
     # After this many seconds without a key press the in-memory pattern window is
@@ -72,7 +73,9 @@ def load_config(path: Path | None = None) -> Config:
     for key, value in raw.items():
         if key not in known:
             raise ValueError(f"{path}: unknown option {key!r}")
-        if key == "sym_keys":
+        if key == "device_name":
+            value = (value,) if isinstance(value, str) else tuple(value)
+        elif key == "sym_keys":
             value = frozenset(v if v.startswith("KEY_") else f"KEY_{v.upper()}" for v in value)
         elif key == "stats_path":
             value = Path(value).expanduser()

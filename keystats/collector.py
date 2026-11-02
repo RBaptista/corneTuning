@@ -16,6 +16,8 @@ from .detector import Detector
 from .stats import Stats, load, save
 
 RETRY_SECONDS = 2.0
+# While connected, look for another configured keyboard being plugged in this often.
+SCAN_SECONDS = 10.0
 
 
 def log(msg: str) -> None:
@@ -46,8 +48,8 @@ def list_devices() -> list[tuple[str, str | None]]:
     return out
 
 
-def find_keyboards(name: str):
-    """Open every event device whose name matches exactly and that has letter keys.
+def find_keyboards(names: tuple[str, ...]):
+    """Open every event device whose name is exactly one of ``names`` and that has letter keys.
 
     Matching by exact name skips the "<name> Mouse", "System Control" and
     "Consumer Control" interfaces. The device is never grabbed.
@@ -61,11 +63,15 @@ def find_keyboards(name: str):
             unreadable += 1
             continue
         caps = dev.capabilities().get(evdev.ecodes.EV_KEY, [])
-        if dev.name == name and evdev.ecodes.KEY_A in caps:
+        if dev.name in names and evdev.ecodes.KEY_A in caps:
             found.append(dev)
         else:
             dev.close()
     return found, unreadable
+
+
+def _names(names: tuple[str, ...]) -> str:
+    return " or ".join(repr(n) for n in names)
 
 
 def _key_name(evdev, code: int) -> str | None:
@@ -126,7 +132,7 @@ class Collector:
         if not self.dry_run:
             control.write_pid(self.cfg)
         mode = " (dry run: nothing is written)" if self.dry_run else ""
-        log(f"collecting from {self.cfg.device_name!r}{mode}; stats: {self.cfg.stats_path}")
+        log(f"collecting from {_names(self.cfg.device_name)}{mode}; stats: {self.cfg.stats_path}")
         if self._was_paused:
             log("paused (keystats resume to start collecting)")
         try:
@@ -137,12 +143,12 @@ class Collector:
                     if not waiting_logged:
                         hint = (f" ({unreadable} input devices unreadable — see README 'Permissions')"
                                 if unreadable else "")
-                        log(f"waiting for keyboard {self.cfg.device_name!r}{hint}")
+                        log(f"waiting for keyboard {_names(self.cfg.device_name)}{hint}")
                         waiting_logged = True
                     self._sleep(RETRY_SECONDS)
                     continue
                 waiting_logged = False
-                log("connected: " + ", ".join(d.path for d in devices))
+                log("connected: " + ", ".join(f"{d.path} ({d.name})" for d in devices))
                 self._read(evdev, devices)
                 for d in devices:
                     try:
@@ -166,8 +172,19 @@ class Collector:
 
     def _read(self, evdev, devices) -> None:
         by_fd = {d.fd: d for d in devices}
+        paths = {d.path for d in devices}
         EV_KEY = evdev.ecodes.EV_KEY
+        next_scan = time.monotonic() + SCAN_SECONDS
         while not self._stop:
+            if time.monotonic() >= next_scan:
+                # Another configured keyboard plugged in meanwhile: reconnect to all.
+                found, _ = find_keyboards(self.cfg.device_name)
+                for d in found:
+                    d.close()
+                if {d.path for d in found} - paths:
+                    log("another keyboard connected; reconnecting")
+                    return
+                next_scan = time.monotonic() + SCAN_SECONDS
             try:
                 ready, _, _ = select.select(list(by_fd), [], [], 1.0)
                 for fd in ready:
